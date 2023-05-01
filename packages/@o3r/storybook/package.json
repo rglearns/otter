@@ -46,7 +46,7 @@
     "@angular-devkit/core": "~15.2.0",
     "@angular-devkit/schematics": "~15.2.0",
     "@angular/core": "^15.1.2",
-    "@ngrx/store": "^15.0.0",
+    "@ngrx/store": "~15.4.0",
     "@o3r/components": "workspace:^",
     "@o3r/configuration": "workspace:^",
     "@o3r/core": "workspace:^",

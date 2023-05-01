@@ -1,4 +1,4 @@
-import {Injectable, Optional} from '@angular/core';
+import {Injectable, Injector} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {
   cancelPlaceholderRequest,
@@ -8,13 +8,14 @@ import {
   selectPlaceholderRequestEntityUsage,
   setPlaceholderRequestEntityFromUrl,
   updatePlaceholderRequestEntity
-} from '@o3r/components';
+} from '../stores';
 import {fromApiEffectSwitchMapById} from '@o3r/core';
-import {DynamicContentService} from '@o3r/dynamic-content';
-import {LocalizationService} from '@o3r/localization';
-import {combineLatest, EMPTY, firstValueFrom, Observable, of} from 'rxjs';
+import {LoggerService} from '@o3r/logger';
+import type {DynamicContentService} from '@o3r/dynamic-content';
+import type {LocalizationService} from '@o3r/localization';
+import type {RulesEngineRunnerService} from '@o3r/rules-engine';
+import {combineLatest, EMPTY, firstValueFrom, from, Observable, of} from 'rxjs';
 import {distinctUntilChanged, map, switchMap, take} from 'rxjs/operators';
-import {RulesEngineService} from './rules-engine.service';
 import {Store} from '@ngrx/store';
 import {JSONPath} from 'jsonpath-plus';
 
@@ -32,12 +33,16 @@ export class PlaceholderTemplateResponseEffect {
     this.actions$.pipe(
       ofType(setPlaceholderRequestEntityFromUrl),
       fromApiEffectSwitchMapById(
-        (templateResponse, action) => {
-          const facts = templateResponse.vars ? Object.values(templateResponse.vars).filter((variable: PlaceholderVariable) => variable.type === 'fact') : [];
-          const factsStreamsList = facts.map((fact) =>
-            this.rulesEngineService.engine.retrieveOrCreateFactStream(fact.value).pipe(map((factValue) => ({
+        async (templateResponse, action) => {
+          const rulesEngineService = await this.rulesEngineService;
+          const facts = templateResponse.vars ? Object.values(templateResponse.vars).filter((variable) => variable.type === 'fact') : [];
+          if (facts.length > 0 && !rulesEngineService) {
+            this.logger.warn(`The action ${action.id} contains fact variable (${facts.map(({value}) => value).join(', ')}) but no Rule Engines Service has been loaded. The fact will be ignored.`);
+          }
+          const factsStreamsList = rulesEngineService ? facts.map((fact) =>
+            rulesEngineService.engine.retrieveOrCreateFactStream(fact.value).pipe(map((factValue) => ({
               name: fact.value, factValue
-            }))));
+            })))) : [];
           const factsStreamsList$ = factsStreamsList.length ? combineLatest(factsStreamsList) : of([]);
           return combineLatest([factsStreamsList$, this.store.select(selectPlaceholderRequestEntityUsage(action.id)).pipe(distinctUntilChanged())]).pipe(
             switchMap(([factsUsedInTemplate, placeholderRequestUsage]) => {
@@ -67,12 +72,27 @@ export class PlaceholderTemplateResponseEffect {
     )
   );
 
+  private rulesEngineService: Promise<RulesEngineRunnerService | null>;
+  private dynamicContentService: Promise<DynamicContentService | null>;
+  private translationService: Promise<LocalizationService | null>;
+
   constructor(
     private actions$: Actions,
-    private rulesEngineService: RulesEngineService,
-    private dynamicContentService: DynamicContentService,
     private store: Store<PlaceholderRequestStore>,
-    @Optional() private translationService?: LocalizationService) {
+    private logger: LoggerService,
+    injector: Injector) {
+    this.rulesEngineService = import('@o3r/rules-engine')
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      .then(({ RulesEngineRunnerService }) => injector.get(RulesEngineRunnerService, null))
+      .catch(() => null);
+    this.dynamicContentService = import('@o3r/dynamic-content')
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      .then(({ DynamicContentService }) => injector.get(DynamicContentService, null))
+      .catch(() => null);
+    this.translationService = import('@o3r/localization')
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      .then(({ LocalizationService }) => injector.get(LocalizationService, null))
+      .catch(() => null);
   }
 
   /**
@@ -88,7 +108,7 @@ export class PlaceholderTemplateResponseEffect {
       set[fact.name] = fact.factValue;
       return set;
     }, {});
-    const replacements$: Observable<{ ejsVar: RegExp; value: string }>[] = [];
+    const replacements$: Observable<{ ejsVar: RegExp; value: string } | null>[] = [];
     if (vars && template) {
       for (const varName in vars) {
         if (Object.prototype.hasOwnProperty.call(vars, varName)) {
@@ -96,9 +116,12 @@ export class PlaceholderTemplateResponseEffect {
           switch (vars[varName].type) {
             case 'relativeUrl': {
               replacements$.push(
-                this.dynamicContentService.getMediaPathStream(vars[varName].value).pipe(
-                  take(1),
-                  map((value: string) => ({ejsVar, value}))
+                from(this.dynamicContentService).pipe(
+                  switchMap((dynamicContentService) => dynamicContentService?.getMediaPathStream(vars[varName].value).pipe(
+                    take(1),
+                    map((value: string) => ({ejsVar, value}))
+                  ) || of({ ejsVar, value: vars[varName].value })
+                  )
                 )
               );
               break;
@@ -120,13 +143,12 @@ export class PlaceholderTemplateResponseEffect {
                 acc[paramName] = factset[paramName];
                 return acc;
               }, {});
-              if (this.translationService) {
-                replacements$.push(
-                  this.translationService.translate(vars[varName].value, linkedParams).pipe(
-                    map((value: string) => ({ejsVar, value}))
-                  )
-                );
-              }
+              replacements$.push(
+                from(this.translationService).pipe(
+                  switchMap((translationService) => translationService ? translationService.translate(vars[varName].value, linkedParams) : of(null)),
+                  map((value) => (value ? { ejsVar, value } : null))
+                )
+              );
               break;
             }
             default : {
@@ -139,10 +161,13 @@ export class PlaceholderTemplateResponseEffect {
     }
     return replacements$.length > 0 && !!template ?
       combineLatest(replacements$).pipe(
-        map((replacements: { ejsVar: RegExp; value: string }[]) => ({
-          renderedTemplate: replacements.reduce((acc, replacement) =>
-            acc.replace(replacement.ejsVar, replacement.value), template!
-          ),
+        map((replacements) => ({
+          renderedTemplate: replacements.reduce((acc, replacement) => {
+            if (replacement) {
+              acc.replace(replacement.ejsVar, replacement.value);
+            }
+            return acc;
+          }, template!),
           unknownTypeFound
         }))
       ) : of({renderedTemplate: template, unknownTypeFound});
@@ -158,13 +183,14 @@ export class PlaceholderTemplateResponseEffect {
    */
   public async renderHTML(template?: string, vars?: Record<string, PlaceholderVariable>, facts?: { name: string; factValue: any }[]) {
     let unknownTypeFound = false;
+    const dynamicContentService = await this.dynamicContentService;
     if (vars && template) {
       for (const varName in vars) {
         if (Object.prototype.hasOwnProperty.call(vars, varName)) {
           const ejsVar = new RegExp(`<%=\\s*${varName}\\s*%>`, 'g');
           switch (vars[varName].type) {
             case 'relativeUrl': {
-              const url = await firstValueFrom(this.dynamicContentService.getMediaPathStream(vars[varName].value));
+              const url = await firstValueFrom(dynamicContentService?.getMediaPathStream(vars[varName].value) || of(vars[varName].value));
               template = template.replace(ejsVar, url);
               break;
             }

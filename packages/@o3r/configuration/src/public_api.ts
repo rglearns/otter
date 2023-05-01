@@ -4,5 +4,6 @@ export * from './devkit/index';
 export * from './services/index';
 export * from './stores/index';
 export * from './tools/index';
+export * from './rules-engine/index';
 
 

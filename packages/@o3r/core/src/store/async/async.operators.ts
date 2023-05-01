@@ -15,7 +15,7 @@ import { AsyncRequest, ExtractFromApiActionPayloadType, FromApiActionPayload } f
  */
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function fromApiEffectSwitchMap<T extends FromApiActionPayload<any>, S extends ExtractFromApiActionPayloadType<T>, U extends Action, V extends Action, W extends Action>(
-  successHandler: (result: S, action: T) => U | Observable<U>,
+  successHandler: (result: S, action: T) => U | Observable<U> | Promise<Observable<U> | U>,
   errorHandler: (error: any, action: T) => Observable<V>,
   cancelRequestActionFactory: (props: AsyncRequest, action: T) => W): OperatorFunction<T, U | V | W> {
   const pendingRequestIdsContext: Record<string, boolean> = {};
@@ -41,8 +41,10 @@ export function fromApiEffectSwitchMap<T extends FromApiActionPayload<any>, S ex
       return from(action.call).pipe(
         tap(cleanStack),
         switchMap((result) => {
-          const success = successHandler(result, action);
-          return isObservable(success) ? success : of(success);
+          const sucessPromise = Promise.resolve(successHandler(result, action));
+          return from(sucessPromise).pipe(
+            switchMap((success) => isObservable(success) ? success : of(success))
+          );
         }),
         catchError((error) => {
           cleanStack();
@@ -65,7 +67,7 @@ export function fromApiEffectSwitchMapById<T extends FromApiActionPayload<any> &
   U extends Action,
   V extends Action,
   W extends Action>(
-  successHandler: (result: S, action: T) => U | Observable<U>,
+  successHandler: (result: S, action: T) => U | Observable<U> | Promise<Observable<U> | U>,
   errorHandler: (error: any, action: T) => Observable<V>,
   cancelRequestActionFactory: (props: AsyncRequest, action: T) => W,
   cleanUpTimer?: number

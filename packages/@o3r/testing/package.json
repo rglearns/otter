@@ -99,7 +99,7 @@
     "@angular/core": "~15.2.0",
     "@angular/forms": "~15.2.0",
     "@angular/platform-browser": "~15.2.0",
-    "@ngrx/store": "^15.0.0",
+    "@ngrx/store": "~15.4.0",
     "@ngx-translate/core": "~14.0.0",
     "@o3r/localization": "workspace:^",
     "@o3r/schematics": "workspace:^",

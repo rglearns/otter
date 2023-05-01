@@ -34,7 +34,7 @@
     "@capacitor/core": "^4.0.1",
     "@capacitor/device": "^4.0.1",
     "@capacitor/preferences": "^4.0.1",
-    "@ngrx/store": "^15.0.0",
+    "@ngrx/store": "~15.4.0",
     "@o3r/core": "workspace:^",
     "@o3r/logger": "workspace:^",
     "@o3r/schematics": "workspace:^",

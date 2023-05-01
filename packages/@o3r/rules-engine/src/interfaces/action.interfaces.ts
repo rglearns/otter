@@ -2,6 +2,8 @@ import type { ActionBlock } from '../engine/index';
 
 /**
  * Content of action that updates the configuration
+ *
+ * @deprecated use the one exposer by `@o3r/configuration` module. Will be removed in Otter v10.
  */
 export interface ActionUpdateConfigBlock extends ActionBlock {
   actionType: 'UPDATE_CONFIG';
@@ -12,6 +14,8 @@ export interface ActionUpdateConfigBlock extends ActionBlock {
 
 /**
  * Content of action that updates an asset
+ *
+ * @deprecated use the one exposer by `@o3r/dynamic-content` module. Will be removed in Otter v10.
  */
 export interface ActionUpdateAssetBlock extends ActionBlock {
   actionType: 'UPDATE_ASSET';
@@ -21,6 +25,8 @@ export interface ActionUpdateAssetBlock extends ActionBlock {
 
 /**
  * Content of action that updates localization
+ *
+ * @deprecated use the one exposer by `@o3r/localization` module. Will be removed in Otter v10.
  */
 export interface ActionUpdateLocalisationBlock extends ActionBlock {
   actionType: 'UPDATE_LOCALISATION';
@@ -30,6 +36,8 @@ export interface ActionUpdateLocalisationBlock extends ActionBlock {
 
 /**
  * Content of action that updates a placeholder
+ *
+ * @deprecated use the one exposer by `@o3r/components` module. Will be removed in Otter v10.
  */
 export interface ActionUpdatePlaceholderBlock extends ActionBlock {
   actionType: 'UPDATE_PLACEHOLDER';
@@ -39,6 +47,8 @@ export interface ActionUpdatePlaceholderBlock extends ActionBlock {
 
 /**
  * Type that regroups all different kind of actions
+ *
+ * @deprecated will be removed in Otter v10.
  */
 export type ActionOverrideBlock =
   ActionUpdateConfigBlock |

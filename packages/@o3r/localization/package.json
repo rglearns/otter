@@ -24,7 +24,7 @@
     "@angular/core": "~15.2.0",
     "@angular/platform-browser-dynamic": "~15.2.0",
     "@formatjs/intl-numberformat": "^8.0.2",
-    "@ngrx/store": "^15.0.0",
+    "@ngrx/store": "~15.4.0",
     "@ngx-translate/core": "~14.0.0",
     "@o3r/core": "workspace:^",
     "@o3r/dynamic-content": "workspace:^",
