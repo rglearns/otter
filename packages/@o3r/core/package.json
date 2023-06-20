@@ -34,6 +34,8 @@
     "@ngrx/router-store": "~16.0.1",
     "@ngrx/store": "~16.0.1",
     "@ngrx/store-devtools": "~16.0.1",
+    "@nrwl/devkit": "~16.3.2",
+    "@nx/angular": "~16.3.2",
     "@schematics/angular": "~16.0.5",
     "chokidar": "^3.5.2",
     "comment-json": "^4.1.0",
@@ -48,6 +50,12 @@
       "optional": true
     },
     "@ngrx/router-store": {
+      "optional": true
+    },
+    "@nrwl/devkit": {
+      "optional": true
+    },
+    "@nx/angular": {
       "optional": true
     },
     "@o3r/schematics": {
@@ -97,9 +105,12 @@
     "@ngrx/entity": "~16.0.1",
     "@ngrx/store": "~16.0.1",
     "@ngrx/store-devtools": "~16.0.1",
+    "@nrwl/devkit": "~16.3.2",
+    "@nx/angular": "~16.3.2",
     "@nx/jest": "~16.3.2",
     "@nx/js": "~16.3.2",
     "@nx/linter": "~16.3.2",
+    "@nx/workspace": "~16.3.2",
     "@o3r/build-helpers": "workspace:^",
     "@o3r/dev-tools": "workspace:^",
     "@o3r/eslint-plugin": "workspace:^",
