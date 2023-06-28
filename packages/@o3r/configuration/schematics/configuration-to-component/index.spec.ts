@@ -90,7 +90,7 @@ export class NgComponent {}
     expect(componentFileContent).toContain('componentType: \'Component\'');
   });
 
-  it('should throw if we add config to a component that already have it', async () => {
+  it('should throw if we add config to a component that already has it', async () => {
     const runner = new SchematicTestRunner('schematics', collectionPath);
     const tree = await runner.runSchematic('configuration-to-component', {
       projectName: 'test-project',

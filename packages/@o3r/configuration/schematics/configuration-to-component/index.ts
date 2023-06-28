@@ -52,7 +52,7 @@ const checkConfiguration = (componentPath: string, tree: Tree) => {
     && ts.isIdentifier(classElement.name)
     && configProperties.includes(classElement.name.escapedText.toString())
   )) {
-    throw new Error(`Unable to add config to this component because it already have at least one of these properties: ${configProperties.join(', ')}.`);
+    throw new Error(`Unable to add config to this component because it already has at least one of these properties: ${configProperties.join(', ')}.`);
   }
 };
 
