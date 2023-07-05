@@ -121,6 +121,9 @@
       "global",
       "{projectRoot}/plugins/**/*",
       "{projectRoot}/package.json"
+    ],
+    "dist": [
+      "{projectRoot}/dist/**/*"
     ]
   },
   "targetDefaults": {
@@ -133,6 +136,15 @@
       "inputs": [
         "specs",
         "^specs"
+      ]
+    },
+    "test-int": {
+      "inputs": [
+        "global",
+        "dist",
+        "schematics",
+        "^dist",
+        "^schematics"
       ]
     },
     "prepare-publish": {

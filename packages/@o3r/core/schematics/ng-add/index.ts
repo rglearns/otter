@@ -43,14 +43,12 @@ export function ngAdd(options: NgAddSchematicsSchema): Rule {
     const corePackageJsonContent = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', '..', 'package.json'), {encoding: 'utf-8'})) as PackageJson;
     const o3rCoreVersion = corePackageJsonContent.version ? `@${corePackageJsonContent.version}` : '';
     const schematicsDependencies = ['@o3r/dev-tools', '@o3r/schematics'];
-    for (const dependency of schematicsDependencies) {
-      context.addTask(new DevInstall({
-        packageName: dependency + o3rCoreVersion,
-        hideOutput: false,
-        quiet: false
-      } as any));
-      await lastValueFrom(context.engine.executePostTasks());
-    }
+    context.addTask(new DevInstall({
+      packageName: schematicsDependencies.map((dependency) => `${dependency}${o3rCoreVersion}`).join(' '),
+      hideOutput: false,
+      quiet: false
+    } as any));
+    await lastValueFrom(context.engine.executePostTasks());
 
     return () => chain([
       ...schematicsDependencies.map((dep) => externalSchematic(dep, 'ng-add', {})),

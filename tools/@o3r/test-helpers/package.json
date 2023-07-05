@@ -1,0 +1,38 @@
+{
+  "name": "@o3r/test-helpers",
+  "version": "0.0.0-placeholder",
+  "description": "Test helpers",
+  "type": "module",
+  "private": true,
+  "keywords": [
+    "otter",
+    "amadeus",
+    "typescript"
+  ],
+  "files": [
+    "scripts/*.mjs"
+  ],
+  "bin": {
+    "prepare-test-app": "./scripts/prepare-test-app.mjs"
+  },
+  "dependencies": {
+    "globby": "^13.1.2",
+    "minimist": "^1.2.6",
+    "semver": "^7.5.2"
+  },
+  "peerDependencies": {
+    "typescript": "~5.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "nx": "~16.5.0",
+    "typescript": "~5.0.2"
+  },
+  "otter": {
+    "versionHarmonize": {
+      "ignore": [
+        "globby"
+      ]
+    }
+  }
+}

@@ -422,6 +422,6 @@ const mockTranslationsCompilerProvider: Provider = {
       standalone ? noop() : updateModuleRule,
       ...(options.activateDummy ? [addDummyKeyRule, updateTemplateRule] : []),
       options.skipLinter ? noop() : applyEsLintFix()
-    ])(tree, context);
+    ]);
   };
 }

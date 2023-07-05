@@ -1,9 +1,9 @@
-import { execSync, ExecSyncOptions } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import {execSync, ExecSyncOptions} from 'node:child_process';
+import {readFileSync, writeFileSync} from 'node:fs';
 import * as path from 'node:path';
 import getPidFromPort from 'pid-from-port';
 
-const appName = 'test-app-rules-engine';
+const appName = 'test-app-testing';
 const currentFolder = path.join(__dirname, '..', '..', '..', '..');
 const parentFolderPath = path.join(currentFolder, '..');
 const itTestsFolderPath = path.join(parentFolderPath, 'it-tests');
@@ -71,17 +71,17 @@ function setupLocalRegistry() {
   });
 }
 
-describe('new otter application with rules-engine', () => {
+describe('new otter application with testing', () => {
   setupLocalRegistry();
   beforeAll(() => {
     execSync(`yarn prepare-test-app --appName=${appName} --withCore --packageManager=${packageManager}`, {env: execEnv});
   });
-  test('should add rules engine to existing application', () => {
-    execSync(`${packageManagerCmd.add} @o3r/rules-engine@${o3rVersion}`, execAppOptions);
-    execSync(`${packageManagerCmd.exec} ng add @o3r/rules-engine@${o3rVersion} --skip-confirmation --defaults=true --force --verbose --enable-cms`, execAppOptions);
+  test('should add testing to existing application', () => {
+    execSync(`${packageManagerCmd.add} @o3r/testing@${o3rVersion}`, execAppOptions);
+    execSync(`${packageManagerCmd.exec} ng add @o3r/testing@${o3rVersion} --skip-confirmation --defaults=true --force --verbose`, execAppOptions);
 
-    execSync(`${packageManagerCmd.exec} ng g @o3r/core:component --defaults=true test-component --activate-dummy --description="" --use-rules-engine=false`, execAppOptions);
-    execSync(`${packageManagerCmd.exec} ng g @o3r/rules-engine:rules-engine-to-component --path=src/components/test-component/container/test-component-cont.component.ts`, execAppOptions);
+    execSync(`${packageManagerCmd.exec} ng g @o3r/core:component --defaults=true test-component`, execAppOptions);
+    execSync(`${packageManagerCmd.exec} ng g @o3r/testing:add-fixture --defaults=true --path="src/components/test-component/container/test-component-cont.component.ts"`, execAppOptions);
     addImportToAppModule('TestComponentContModule', 'src/components/test-component');
 
     expect(() => execSync(packageManagerCmd.install, execAppOptions)).not.toThrow();

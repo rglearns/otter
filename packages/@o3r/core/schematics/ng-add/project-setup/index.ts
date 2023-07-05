@@ -1,4 +1,4 @@
-import { chain, noop, SchematicContext, Tree } from '@angular-devkit/schematics';
+import {chain, noop, SchematicContext, Tree} from '@angular-devkit/schematics';
 import { NodeDependencyType } from '@schematics/angular/utility/dependencies';
 import * as fs from 'node:fs';
 import * as path from 'node:path';

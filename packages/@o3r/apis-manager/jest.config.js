@@ -11,8 +11,12 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/testing/setup-jest.ts'],
   rootDir: '.',
   moduleNameMapper: getJestModuleNameMapper(__dirname),
+  modulePathIgnorePatterns: [
+    '<rootDir>/dist'
+  ],
   testPathIgnorePatterns: [
-    '<rootDir>/dist',
+    '<rootDir>/.*/templates/.*',
+    '<rootDir>/schematics/.*\\.it\\.spec\\.ts$'
   ],
   reporters: [
     'default',

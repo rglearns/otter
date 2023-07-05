@@ -1,4 +1,4 @@
-import { chain, noop, Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
+import {chain, noop, Rule, SchematicContext, Tree} from '@angular-devkit/schematics';
 
 import * as path from 'node:path';
 import { updateCmsAdapter } from '../cms-adapter';

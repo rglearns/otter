@@ -185,6 +185,7 @@ export function updateLocalization(options: { projectName: string | null }, root
    */
   const updatePackageJson: Rule = (tree: Tree, context: SchematicContext) => {
     const workspace = readAngularJson(tree);
+    const packageManager = workspace.cli?.packageManager || (process.env?.npm_execpath?.includes('yarn') ? 'yarn' : 'npm');
     const projectName = options.projectName || Object.keys(workspace.projects)[0];
     const workspaceProject = getProjectFromTree(tree, projectName || null, 'application');
     if (!workspaceProject) {
@@ -203,7 +204,7 @@ export function updateLocalization(options: { projectName: string | null }, root
     }
     packageJson.scripts.start ||= `ng run ${projectName}:run`;
     if (packageJson.scripts.build?.indexOf('generate:translations') === -1) {
-      packageJson.scripts.build = `yarn generate:translations && ${packageJson.scripts.build}`;
+      packageJson.scripts.build = `${packageManager} run generate:translations && ${packageJson.scripts.build}`;
     }
     packageJson.scripts['generate:translations:dev'] ||= `ng run ${projectName}:generate-translations`;
     packageJson.scripts['generate:translations'] ||= `ng run ${projectName}:generate-translations:production`;

@@ -1,9 +1,8 @@
-import { execSync, ExecSyncOptions } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import {execSync, ExecSyncOptions} from 'node:child_process';
 import * as path from 'node:path';
 import getPidFromPort from 'pid-from-port';
 
-const appName = 'test-app-rules-engine';
+const appName = 'test-app-apis-components';
 const currentFolder = path.join(__dirname, '..', '..', '..', '..');
 const parentFolderPath = path.join(currentFolder, '..');
 const itTestsFolderPath = path.join(parentFolderPath, 'it-tests');
@@ -35,18 +34,6 @@ const packageManagerCmd = PACKAGE_MANAGERS_CMD[packageManager];
 const o3rVersion = '999.0.0';
 
 /**
- * @param moduleName
- * @param modulePath
- */
-function addImportToAppModule(moduleName: string, modulePath: string) {
-  const appModuleFilePath = path.join(appFolderPath, 'src/app/app.module.ts');
-  const appModule = readFileSync(appModuleFilePath).toString();
-  writeFileSync(appModuleFilePath, `import { ${moduleName} } from '${modulePath}';\n${
-    appModule.replace(/(BrowserModule,)/, `$1\n    ${moduleName},`)
-  }`);
-}
-
-/**
  * Set up a local npm registry inside a docker image before the tests.
  * Publish all the packages of the Otter monorepo on it.
  * Can be accessed during the tests with url http://localhost:4873
@@ -71,18 +58,14 @@ function setupLocalRegistry() {
   });
 }
 
-describe('new otter application with rules-engine', () => {
+describe('new otter application with components', () => {
   setupLocalRegistry();
   beforeAll(() => {
     execSync(`yarn prepare-test-app --appName=${appName} --withCore --packageManager=${packageManager}`, {env: execEnv});
   });
-  test('should add rules engine to existing application', () => {
-    execSync(`${packageManagerCmd.add} @o3r/rules-engine@${o3rVersion}`, execAppOptions);
-    execSync(`${packageManagerCmd.exec} ng add @o3r/rules-engine@${o3rVersion} --skip-confirmation --defaults=true --force --verbose --enable-cms`, execAppOptions);
-
-    execSync(`${packageManagerCmd.exec} ng g @o3r/core:component --defaults=true test-component --activate-dummy --description="" --use-rules-engine=false`, execAppOptions);
-    execSync(`${packageManagerCmd.exec} ng g @o3r/rules-engine:rules-engine-to-component --path=src/components/test-component/container/test-component-cont.component.ts`, execAppOptions);
-    addImportToAppModule('TestComponentContModule', 'src/components/test-component');
+  test('should add components to existing application', () => {
+    execSync(`${packageManagerCmd.add} @o3r/components@${o3rVersion}`, execAppOptions);
+    execSync(`${packageManagerCmd.exec} ng add @o3r/components@${o3rVersion} --skip-confirmation --defaults=true --force --verbose --enable-cms`, execAppOptions);
 
     expect(() => execSync(packageManagerCmd.install, execAppOptions)).not.toThrow();
     expect(() => execSync(`${packageManagerCmd.run} build`, execAppOptions)).not.toThrow();
