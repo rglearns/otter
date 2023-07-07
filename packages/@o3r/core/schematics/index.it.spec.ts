@@ -154,14 +154,14 @@ describe('new Otter application', () => {
     addImportToAppModule('TestAddConfigComponentContModule', 'src/components/test-add-config-component');
 
     execSync(`yarn ng g @o3r/core:component --defaults=true test-add-theming-component ${defaultOptions}`, execAppOptions);
-    execSync('yarn ng g @o3r/styling:add-theming --defaults=true --path="src/components/test-add-theming-component/presenter/test-add-theming-component-pres.style.scss"', execAppOptions);
+    execSync('yarn ng g @o3r/styling:add-theming --defaults=true --path="src/components/test-add-theming-component/presenter/test-add-theming-component-pres.component.scss"', execAppOptions);
     addImportToAppModule('TestAddThemingComponentContModule', 'src/components/test-add-theming-component');
 
     execSync(`yarn ng g @o3r/core:component --defaults=true test-add-analytics-component ${defaultOptions}`, execAppOptions);
     execSync('yarn ng g @o3r/analytics:add-analytics --defaults=true --path="src/components/test-add-analytics-component/container/test-add-analytics-component-cont.component.ts"', execAppOptions);
     addImportToAppModule('TestAddAnalyticsComponentContModule', 'src/components/test-add-analytics-component');
 
-    execSync('yarn ng g @o3r/core:component --defaults=true test-add-context-component ${defaultOptions}', execAppOptions);
+    execSync(`yarn ng g @o3r/core:component --defaults=true test-add-context-component ${defaultOptions}`, execAppOptions);
     execSync('yarn ng g @o3r/core:add-context --defaults=true --path="src/components/test-add-context-component/container/test-add-context-component-cont.component.ts"', execAppOptions);
     addImportToAppModule('TestAddContextComponentContModule', 'src/components/test-add-context-component');
 

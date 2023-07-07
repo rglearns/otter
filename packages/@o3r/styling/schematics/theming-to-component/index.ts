@@ -18,7 +18,7 @@ import type { NgAddThemingSchematicsSchema } from './schema';
 
 const checkTheming = (stylePath: string, tree: Tree) => {
   if (tree.exists(
-    stylePath.replace(/style\.scss$/, 'style.theme.scss')
+    stylePath.replace(/\.scss$/, '.theme.scss')
   )) {
     throw new Error('This component already have theming.');
   }
@@ -37,7 +37,7 @@ export function ngAddTheming(options: NgAddThemingSchematicsSchema): Rule {
     checkTheming(stylePath, tree);
 
     const properties = {
-      name: basename(stylePath, '.style.scss')
+      name: basename(stylePath).split('.')[0]
     };
 
     const createThemingFilesRule: Rule = mergeWith(apply(url('./templates'), [
@@ -48,7 +48,7 @@ export function ngAddTheming(options: NgAddThemingSchematicsSchema): Rule {
 
     const updateStyleRule: Rule = () => {
       const recorder = tree.beginUpdate(stylePath);
-      const change = new InsertChange(stylePath, 0, `@import './${properties.name}.style.theme';\n\n`);
+      const change = new InsertChange(stylePath, 0, `@import './${properties.name}.theme';\n\n`);
       applyToUpdateRecorder(recorder, [change]);
       tree.commitUpdate(recorder);
       return tree;

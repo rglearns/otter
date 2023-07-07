@@ -124,8 +124,8 @@ export function ngGenerateComponent(options: NgGenerateComponentSchematicsSchema
 
       return chain([
         generateRootBarrel,
-        generateComponentContainer(options),
         generateComponentPresenter(options),
+        generateComponentContainer(options),
         generateFiles,
         options.skipLinter ? noop() : applyEsLintFix()
       ]);

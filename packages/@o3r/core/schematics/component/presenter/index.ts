@@ -1,12 +1,14 @@
 import {
   apply,
   chain,
+  externalSchematic,
   MergeStrategy,
   mergeWith,
   move,
   noop,
   renameTemplateFiles,
   Rule,
+  schematic,
   SchematicContext,
   template,
   Tree,
@@ -14,18 +16,12 @@ import {
 } from '@angular-devkit/schematics';
 import { applyEsLintFix } from '@o3r/schematics';
 import * as path from 'node:path';
-
 import {
-  getComponentAnalyticsName,
-  getComponentBlockName,
-  getComponentContextName,
   getComponentFileName,
-  getComponentFixtureName,
   getComponentFolderName,
-  getComponentModuleName,
   getComponentName,
   getComponentSelectorWithoutSuffix,
-  getComponentTranslationName, getDestinationPath, getInputComponentName,
+  getDestinationPath, getInputComponentName,
   getLibraryNameFromPath, getProjectFromTree
 } from '@o3r/schematics';
 import { getAddAnalyticsRules } from '../common/analytics';
@@ -38,8 +34,6 @@ import { NgGenerateComponentSchematicsSchema } from '../schema';
 import { ComponentStructureDef } from '../structures.types';
 
 export const PRESENTER_FOLDER = 'presenter';
-const PRESENTER_TEMPLATE_PATH = './templates/presenter';
-const MODULE_TEMPLATE_PATH = './templates/module';
 
 /**
  * Generates the template properties
@@ -54,20 +48,12 @@ const getTemplateProperties = (options: NgGenerateComponentSchematicsSchema, com
 
   return {
     ...options,
-    componentType: 'Component',
-    moduleName: getComponentModuleName(inputComponentName, componentStructureDef),
-    componentName: getComponentName(inputComponentName, componentStructureDef),
-    blockName: getComponentBlockName(inputComponentName),
-    componentTranslation: getComponentTranslationName(inputComponentName, componentStructureDef),
-    componentContext: getComponentContextName(inputComponentName, componentStructureDef),
-    componentFixture: getComponentFixtureName(inputComponentName, componentStructureDef),
-    componentAnalytics: getComponentAnalyticsName(inputComponentName, componentStructureDef),
+    componentName: getComponentName(inputComponentName, componentStructureDef).replace(/Component$/, ''),
     componentSelector: getComponentSelectorWithoutSuffix(options.componentName, prefix || null),
     projectName: options.projectName || getLibraryNameFromPath(options.path),
     folderName,
     name: getComponentFileName(options.componentName, componentStructureDef), // air-offer | air-offer-pres
-    suffix: componentStructureDef.toLowerCase(), // pres | ''
-    description: options.description || ''
+    suffix: componentStructureDef.toLowerCase() // pres | ''
   };
 };
 
@@ -88,66 +74,88 @@ export function ngGenerateComponentPresenter(options: NgGenerateComponentSchemat
 
     const destination = getDestinationPath('@o3r/core:component', options.path, tree);
     const componentDestination = path.join(destination, fullStructureRequested ? path.join(properties.folderName, PRESENTER_FOLDER) : properties.folderName);
+    const componentPath = path.join(componentDestination, `${properties.name}.component.ts`);
+    const specPath = path.join(componentDestination, `${properties.name}.spec.ts`);
+    const stylePath = path.join(componentDestination, `${properties.name}.component.scss`);
 
     const rules: Rule[] = [];
 
-    rules.push(mergeWith(apply(url(PRESENTER_TEMPLATE_PATH), [
-      template({
-        ...properties
-      }),
-      renameTemplateFiles(),
-      move(componentDestination)
-    ]), MergeStrategy.Overwrite));
-
-    if (!options.standalone) {
-      rules.push(mergeWith(apply(url(MODULE_TEMPLATE_PATH), [
-        template({
-          ...properties
-        }),
+    rules.push(
+      mergeWith(apply(url('./templates'), [
+        template(properties),
         renameTemplateFiles(),
         move(componentDestination)
-      ]), MergeStrategy.Overwrite));
+      ]), MergeStrategy.Overwrite),
+      externalSchematic('@schematics/angular', 'component', {
+        selector: `${properties.componentSelector}-${properties.suffix}`,
+        path: componentDestination,
+        name: properties.componentName,
+        inlineStyle: false,
+        inlineTemplate: false,
+        viewEncapsulation: 'None',
+        changeDetection: 'OnPush',
+        style: 'scss',
+        type: 'Component',
+        skipSelector: false,
+        standalone: options.standalone,
+        skipImport: true,
+        flat: true
+      }),
+      // Angular schematics generate spec file with this pattern: component-name.component.spec.ts
+      move(componentPath.replace(/.ts$/, '.spec.ts'), specPath),
+      schematic('convert-component', {
+        path: componentPath,
+        skipLinter: options.skipLinter
+      })
+    );
+
+    if (!options.standalone) {
+      rules.push(
+        externalSchematic('@schematics/angular', 'module', {
+          path: componentDestination,
+          flat: true,
+          name: properties.componentName
+        })
+      );
     }
 
-    const componentPath = `${properties.name}.component.ts`;
-
     const configurationRules = await getAddConfigurationRules(
-      path.join(componentDestination, componentPath),
+      componentPath,
       options,
       context
     );
     rules.push(...configurationRules);
 
     const themingRules = await getAddThemingRules(
-      path.join(componentDestination, `${properties.name}.style.scss`),
+      stylePath,
       options,
       context
     );
     rules.push(...themingRules);
 
     const localizationRules = await getAddLocalizationRules(
-      path.join(componentDestination, componentPath),
+      componentPath,
       options,
       context
     );
     rules.push(...localizationRules);
 
     const fixtureRules = await getAddFixtureRules(
-      path.join(componentDestination, componentPath),
+      componentPath,
       options,
       context
     );
     rules.push(...fixtureRules);
 
     const analyticsRules = await getAddAnalyticsRules(
-      path.join(componentDestination, `${properties.name}.component.ts`),
+      componentPath,
       options,
       context
     );
 
     rules.push(...analyticsRules);
     const contextRules = await getAddContextRules(
-      path.join(componentDestination, componentPath),
+      componentPath,
       options,
       context
     );

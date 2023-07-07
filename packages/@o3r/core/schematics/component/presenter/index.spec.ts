@@ -29,7 +29,6 @@ describe('Component presenter', () => {
     'test-component-pres.spec.ts',
     'test-component-pres.style.scss',
     'test-component-pres.template.html',
-    'README.md',
     'index.ts'
   ];
 
