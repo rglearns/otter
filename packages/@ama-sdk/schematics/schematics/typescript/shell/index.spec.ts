@@ -65,7 +65,8 @@ describe('Typescript Shell Generator', () => {
     const runner = new SchematicTestRunner('@ama-sdk/schematics', collectionPath);
     tree = await runner.runSchematic('typescript-shell', {
       name: 'test-scope',
-      package: 'test-sdk'
+      package: 'test-sdk',
+      skipInstall: true
     }, Tree.empty());
   });
 
