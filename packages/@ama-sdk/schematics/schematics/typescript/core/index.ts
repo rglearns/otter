@@ -137,6 +137,9 @@ export function ngGenerateTypescriptSDK(options: NgGenerateTypescriptSDKCoreSche
     if (!!packageOpenApiSupportedVersion && semver.valid(packageOpenApiSupportedVersion) && (!packageOpenApiSupportedVersion || !semver.satisfies(openApiVersion, packageOpenApiSupportedVersion))) {
       generatorOptions.generatorVersion = packageOpenApiSupportedVersion;
     }
+    if (options.specConfigPath) {
+      generatorOptions.specConfigPath = options.specConfigPath;
+    }
     return () => (new OpenApiCliGenerator()).getGeneratorRunSchematic(generatorOptions);
   };
 
