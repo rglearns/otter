@@ -1,7 +1,8 @@
 import { chain, Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { NgAddSchematicsSchema } from './schema';
+import { updateCmsAdapter } from '../cms-adapter';
+import type { NgAddSchematicsSchema } from './schema';
 
 /**
  * Add Otter components to an Angular Project
@@ -18,12 +19,16 @@ export function ngAdd(options: NgAddSchematicsSchema): Rule {
       const packageJsonPath = path.resolve(__dirname, '..', '..', 'package.json');
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, { encoding: 'utf-8' }));
       const depsInfo = getO3rPeerDeps(packageJsonPath);
+      if (options.enableCms) {
+        depsInfo.o3rPeerDeps = [...depsInfo.o3rPeerDeps , '@o3r/extractors'];
+      }
       const dependencyType = getProjectDepType(tree);
       const rule = chain([
         removePackages(['@otter/components']),
         ngAddPackages(depsInfo.o3rPeerDeps, { skipConfirmation: true, version: depsInfo.packageVersion, parentPackageInfo: depsInfo.packageName, dependencyType }),
         ngAddPeerDependencyPackages(['chokidar'], packageJsonPath, NodeDependencyType.Dev, options, '@o3r/components - install builder dependency'),
-        registerPackageCollectionSchematics(packageJson)
+        registerPackageCollectionSchematics(packageJson),
+        ...(options.enableCms ? [updateCmsAdapter(options)] : [])
       ]);
 
       context.logger.info(`The package ${depsInfo.packageName!} comes with a debug mechanism`);

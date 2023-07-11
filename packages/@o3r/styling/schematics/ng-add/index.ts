@@ -1,7 +1,8 @@
 import { chain, Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { NgAddSchematicsSchema } from './schema';
+import { updateCmsAdapter } from '../cms-adapter';
+import type { NgAddSchematicsSchema } from './schema';
 
 /**
  * Add Otter styling to an Angular Project
@@ -27,6 +28,9 @@ export function ngAdd(options: NgAddSchematicsSchema): Rule {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       const {NodeDependencyType} = await import('@schematics/angular/utility/dependencies');
       const depsInfo = getO3rPeerDeps(packageJsonPath);
+      if (options.enableCms) {
+        depsInfo.o3rPeerDeps = [...depsInfo.o3rPeerDeps , '@o3r/extractors'];
+      }
       const dependencyType = getProjectDepType(tree);
       return () => chain([
         removePackages(['@otter/styling']),
@@ -50,7 +54,8 @@ export function ngAdd(options: NgAddSchematicsSchema): Rule {
             useOtterTheming: null
           }
         }),
-        ngAddPeerDependencyPackages(['chokidar'], packageJsonPath, NodeDependencyType.Dev, options, depsInfo.packageName)
+        ngAddPeerDependencyPackages(['chokidar'], packageJsonPath, NodeDependencyType.Dev, options, depsInfo.packageName),
+        ...(options.enableCms ? [updateCmsAdapter(options)] : [])
       ])(tree, context);
     } catch (e) {
       // styling needs o3r/core as peer dep. o3r/core will install o3r/schematics

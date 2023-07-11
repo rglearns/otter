@@ -1,5 +1,6 @@
 import { chain, Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import {registerPackageCollectionSchematics} from '@o3r/schematics';
+import { updateCmsAdapter } from '../cms-adapter';
 import type { NgAddSchematicsSchema } from './schema';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
@@ -22,6 +23,9 @@ export function ngAdd(options: NgAddSchematicsSchema): Rule {
       const packageJsonPath = path.resolve(__dirname, '..', '..', 'package.json');
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, { encoding: 'utf-8' }));
       const depsInfo = getO3rPeerDeps(packageJsonPath);
+      if (options.enableCms) {
+        depsInfo.o3rPeerDeps = [...depsInfo.o3rPeerDeps , '@o3r/extractors'];
+      }
       const dependencyType = getProjectDepType(tree);
       const rule = chain([
         registerPackageCollectionSchematics(packageJson),
@@ -37,7 +41,8 @@ export function ngAdd(options: NgAddSchematicsSchema): Rule {
         }),
         removePackages(['@otter/rules-engine', '@otter/rules-engine-core']),
         ngAddPeerDependencyPackages(['jsonpath-plus'], packageJsonPath, dependencyType, options, '@o3r/rules-engine - install builder dependency'),
-        ngAddPackages(depsInfo.o3rPeerDeps, { skipConfirmation: true, version: depsInfo.packageVersion, parentPackageInfo: depsInfo.packageName, dependencyType })
+        ngAddPackages(depsInfo.o3rPeerDeps, { skipConfirmation: true, version: depsInfo.packageVersion, parentPackageInfo: depsInfo.packageName, dependencyType }),
+        ...(options.enableCms ? [updateCmsAdapter(options)] : [])
       ]);
 
       context.logger.info(`The package ${depsInfo.packageName!} comes with a debug mechanism`);
