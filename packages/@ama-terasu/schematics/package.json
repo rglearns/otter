@@ -15,13 +15,13 @@
     "vscode": "^1.22.0"
   },
   "dependencies": {
-    "@angular-devkit/architect": "~0.1600.5",
-    "@angular-devkit/core": "~16.0.5",
-    "@angular-devkit/schematics": "~16.0.5",
+    "@angular-devkit/architect": "~0.1601.0",
+    "@angular-devkit/core": "~16.1.0",
+    "@angular-devkit/schematics": "~16.1.0",
     "tslib": "^2.5.3"
   },
   "devDependencies": {
-    "@angular-eslint/eslint-plugin": "~16.0.3",
+    "@angular-eslint/eslint-plugin": "~16.1.0",
     "@nx/jest": "~16.5.0",
     "@o3r/build-helpers": "workspace:^",
     "@o3r/dev-tools": "workspace:^",
