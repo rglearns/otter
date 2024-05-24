@@ -7068,6 +7068,7 @@ __metadata:
     "@types/node": "npm:^20.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^7.2.0"
     "@typescript-eslint/parser": "npm:^7.2.0"
+    cpy: "npm:~11.0.1"
     eslint: "npm:^8.57.0"
     eslint-import-resolver-node: "npm:^0.3.9"
     eslint-plugin-jest: "npm:~27.9.0"
@@ -7087,6 +7088,7 @@ __metadata:
     cp-package-json: ./scripts/cp-package-json.mjs
     doc-links: ./scripts/doc-links.mjs
     generate-cjs-manifest: ./scripts/generate-cjs-manifest.mjs
+    o3r-cpy: ./scripts/cpy.mjs
     patch-package-json-exports: ./scripts/patch-package-json-exports.mjs
     patch-package-json-main: ./scripts/patch-package-json-main.mjs
     pr-labels: ./scripts/pr-labels.mjs
@@ -16186,6 +16188,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"copy-file@npm:^11.0.0":
+  version: 11.0.0
+  resolution: "copy-file@npm:11.0.0"
+  dependencies:
+    graceful-fs: "npm:^4.2.11"
+    p-event: "npm:^6.0.0"
+  checksum: 10/49714b82fcc1315c06dbb50ce929621f10d620f3a8a17e1b212d4c676fecdcda42626917502b109e3ae5bdd9558ddcfedb5e6b70bd7c485fae53e18fc26e2dba
+  languageName: node
+  linkType: hard
+
 "copy-webpack-plugin@npm:11.0.0":
   version: 11.0.0
   resolution: "copy-webpack-plugin@npm:11.0.0"
@@ -16385,6 +16397,20 @@ __metadata:
     p-filter: "npm:^3.0.0"
     p-map: "npm:^6.0.0"
   checksum: 10/39da11b58b3a6fb7a849a59108fc42113cb8f8f64899d9e44719686b37b720050218b66f04b9be5d12d152c7b4d19314dbed187dfe63bb7a79e0da6f9e322b74
+  languageName: node
+  linkType: hard
+
+"cpy@npm:~11.0.1":
+  version: 11.0.1
+  resolution: "cpy@npm:11.0.1"
+  dependencies:
+    copy-file: "npm:^11.0.0"
+    globby: "npm:^13.2.2"
+    junk: "npm:^4.0.1"
+    micromatch: "npm:^4.0.5"
+    p-filter: "npm:^3.0.0"
+    p-map: "npm:^6.0.0"
+  checksum: 10/0547b160d423f7a23d5c866fe4b3844e639e2c8f19c3521dcd3cf15b7501d1741c3f169f3e294d66834819359d333c588ac8a0b8d9ea5800a95fc1d2ac9574b6
   languageName: node
   linkType: hard
 
@@ -20139,7 +20165,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globby@npm:^13.1.1, globby@npm:^13.1.4":
+"globby@npm:^13.1.1, globby@npm:^13.1.4, globby@npm:^13.2.2":
   version: 13.2.2
   resolution: "globby@npm:13.2.2"
   dependencies:
@@ -25276,6 +25302,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"p-event@npm:^6.0.0":
+  version: 6.0.1
+  resolution: "p-event@npm:6.0.1"
+  dependencies:
+    p-timeout: "npm:^6.1.2"
+  checksum: 10/f8a6bb7e5addee541f5be42685fb070d9848aa0fb761132e825762c1e4009d90416b3f78ec06f7d4ee96b48ef9cebda0b809a0a87e504d7ae5f371f406cf16a8
+  languageName: node
+  linkType: hard
+
 "p-filter@npm:^3.0.0":
   version: 3.0.0
   resolution: "p-filter@npm:3.0.0"
@@ -25412,6 +25447,13 @@ __metadata:
   version: 5.1.0
   resolution: "p-timeout@npm:5.1.0"
   checksum: 10/f5cd4e17301ff1ff1d8dbf2817df0ad88c6bba99349fc24d8d181827176ad4f8aca649190b8a5b1a428dfd6ddc091af4606835d3e0cb0656e04045da5c9e270c
+  languageName: node
+  linkType: hard
+
+"p-timeout@npm:^6.1.2":
+  version: 6.1.2
+  resolution: "p-timeout@npm:6.1.2"
+  checksum: 10/ca3ede368d792bd86fcfa4e133220536382225d31e5f62e2cedb8280df267b25f6684aa0056b22e8aa538cc85014b310058d8fdddeb0a1ff363093d56e87ac3a
   languageName: node
   linkType: hard
 

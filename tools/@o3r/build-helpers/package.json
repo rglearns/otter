@@ -19,6 +19,7 @@
     "cp-package-json": "./scripts/cp-package-json.mjs",
     "doc-links": "./scripts/doc-links.mjs",
     "generate-cjs-manifest": "./scripts/generate-cjs-manifest.mjs",
+    "o3r-cpy": "./scripts/cpy.mjs",
     "patch-package-json-exports": "./scripts/patch-package-json-exports.mjs",
     "patch-package-json-main": "./scripts/patch-package-json-main.mjs",
     "pr-labels": "./scripts/pr-labels.mjs",
@@ -28,6 +29,7 @@
     "update-package": "./scripts/update-package.mjs"
   },
   "dependencies": {
+    "cpy": "~11.0.1",
     "globby": "^14.0.0",
     "minimist": "^1.2.6"
   },
