@@ -16,6 +16,9 @@ import {
 import {
   ScalableDirective,
 } from './resize.directive';
+import {
+  DELTA_RESIZE,
+} from './resize.producer.service';
 
 @Component({
   imports: [ScalableDirective],
@@ -112,6 +115,17 @@ describe('ScalableDirective', () => {
   it('should not set the height style on the element when newHeightFromChannel is not available', () => {
     const channelId = 'scalable-channel-id';
     jest.spyOn(resizeHandlerService, 'newHeightFromChannel').mockReturnValue(undefined);
+    const rendererSpy = jest.spyOn(renderer, 'setStyle');
+    parentComponentFixture.componentInstance.scalableValue = channelId;
+    parentComponentFixture.detectChanges();
+    expect(rendererSpy).not.toHaveBeenCalled();
+    rendererSpy.mockClear();
+  });
+
+  it('should not set the height style on the element when the difference is lower then DELTA RESIZE', () => {
+    const channelId = 'scalable-channel-id';
+    Object.defineProperty(directiveEl.nativeElement, 'offsetHeight', { value: 400 + DELTA_RESIZE / 2 });
+    jest.spyOn(resizeHandlerService, 'newHeightFromChannel').mockReturnValue({ height: 400, channelId: channelId });
     const rendererSpy = jest.spyOn(renderer, 'setStyle');
     parentComponentFixture.componentInstance.scalableValue = channelId;
     parentComponentFixture.detectChanges();

@@ -10,6 +10,9 @@ import {
 import {
   ResizeConsumerService,
 } from './resize.consumer.service';
+import {
+  DELTA_RESIZE,
+} from './resize.producer.service';
 
 /**
  * A directive that adjusts the height of an element based on resize messages from a specified channel.
@@ -54,7 +57,11 @@ export class ScalableDirective {
     effect(() => {
       const newHeightFromChannel = this.newHeightFromChannel();
       if (newHeightFromChannel) {
-        renderer.setStyle(elem.nativeElement, 'height', `${newHeightFromChannel.height}px`);
+        const actualHeight = elem.nativeElement.offsetHeight;
+        // set the height only if the difference between the new height and actual height is bigger than delta
+        if (Math.abs(newHeightFromChannel.height - actualHeight) > DELTA_RESIZE) {
+          renderer.setStyle(elem.nativeElement, 'height', `${newHeightFromChannel.height}px`);
+        }
       }
     });
   }
