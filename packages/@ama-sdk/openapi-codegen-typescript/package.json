@@ -1,7 +1,9 @@
 {
   "name": "@ama-sdk/openapi-codegen-typescript",
   "version": "0.0.0-placeholder",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build:jar": "mvn clean package -f ./pom.xml"
   },

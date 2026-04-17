@@ -16,6 +16,11 @@
       "options": {
         "script": "build:jar"
       }
+    },
+    "publish": {
+      "inputs": [
+        "{projectRoot}/target/typescriptFetch-openapi-generator.jar"
+      ]
     }
   },
   "tags": []
