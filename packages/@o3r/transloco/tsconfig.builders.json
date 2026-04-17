@@ -7,14 +7,18 @@
     "module": "CommonJS",
     "moduleResolution": "node10",
     "rootDir": ".",
+    "lib": ["ESNext"],
     "types": ["node"],
     "skipLibCheck": true,
     "tsBuildInfoFile": "build/.tsbuildinfo.builders"
   },
   "include": [
-    "builders/**/*.ts"
+    "builders/**/*.ts",
+    "schematics/**/*.ts"
   ],
   "exclude": [
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "builders/**/templates/**",
+    "schematics/**/templates/**"
   ]
 }
