@@ -1,6 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Trigger post install scripts when updating package manager, with private registry authentication for Yarn Berry (Yarn >= 2). Configures Yarn home config (~/.yarnrc.yml) on the Renovate runner so 'yarn install' can authenticate against a private registry, then runs the install. arg0: scheme-less registry URL with trailing slash (e.g. '//npm.my-company.example/api/npm/npm/'); used to derive 'https:{{arg0}}' for npmRegistryServer and as the key for 'npmRegistries[...].npmAuthIdent'. arg1: name of the environment variable holding the base64-encoded 'user:password' token (e.g. 'NPM_AUTH_BASE64'); must be exposed to Renovate via customEnvVariables. If your registry uses a bearer token instead, replace npmAuthIdent with npmAuthToken in this preset. References: https://yarnpkg.com/configuration/yarnrc ; https://yarnpkg.com/cli/config/set ; https://docs.renovatebot.com/getting-started/private-packages/#yarn-2",
+  "description": "Trigger post install scripts when updating package manager, with private registry authentication. Handles npm and Yarn 1 via the base preset, and adds dedicated Yarn Berry (Yarn >= 2) handling that configures Yarn home config (~/.yarnrc.yml) on the Renovate runner so 'yarn install' can authenticate against a private registry, then runs the install. Expose only this preset to cover npm, Yarn 1 and Yarn Berry. arg0: scheme-less registry URL with trailing slash (e.g. '//npm.my-company.example/api/npm/npm/'); used to derive 'https:{{arg0}}' for npmRegistryServer and as the key for 'npmRegistries[...].npmAuthIdent'. arg1: name of the environment variable holding the base64-encoded 'user:password' token (e.g. 'NPM_AUTH_BASE64'); must be exposed to Renovate via customEnvVariables. If your registry uses a bearer token instead, replace npmAuthIdent with npmAuthToken in this preset. References: https://yarnpkg.com/configuration/yarnrc ; https://yarnpkg.com/cli/config/set ; https://docs.renovatebot.com/getting-started/private-packages/#yarn-2",
+  "extends": [
+    "github>AmadeusITGroup/otter//tools/renovate/tasks/base-with-auth({{arg0}}, {{arg1}})"
+  ],
   "packageRules": [
     {
       "matchDepTypes": [
@@ -9,6 +12,7 @@
       "matchPackageNames": [
         "yarn"
       ],
+      "matchCurrentVersion": ">=2.0.0",
       "postUpgradeTasks": {
         "commands": [
           "yarn config set -H npmRegistryServer \"https:{{arg0}}\"",

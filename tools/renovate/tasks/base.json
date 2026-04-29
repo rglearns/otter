@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Trigger post install scripts when updating package manager. Thin wrapper around base-with-auth preset with empty authentication args.",
+  "description": "Trigger post install scripts when updating package manager (npm, Yarn 1 and Yarn Berry). Thin wrapper around the yarn2 base-with-auth preset with empty authentication args.",
   "extends": [
-    "github>AmadeusITGroup/otter//tools/renovate/tasks/base-with-auth#feat/renovate-install-private-reg(,)"
+    "github>AmadeusITGroup/otter//tools/renovate/yarn2/tasks/base-with-auth#feat/renovate-install-private-reg(,)"
   ]
 }
