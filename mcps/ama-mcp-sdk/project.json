@@ -1,21 +1,21 @@
 {
-  "name": "mcp",
+  "name": "ama-mcp-sdk",
   "$schema": "https://raw.githubusercontent.com/nrwl/nx/master/packages/nx/schemas/project-schema.json",
   "projectType": "library",
-  "sourceRoot": "packages/@o3r/mcp/src",
+  "sourceRoot": "mcps/ama-mcp-sdk/src",
   "prefix": "o3r",
   "targets": {
     "build": {
       "executor": "nx:noop",
-      "dependsOn": ["compile"]
+      "dependsOn": ["compile", "expose-templates", "expose-resources"]
     },
     "compile": {
       "executor": "nx:run-script",
       "options": {
         "script": "compile"
-      },
-      "dependsOn": ["prepare", "^build"]
+      }
     },
+    "expose-resources": {},
     "test": {},
     "lint": {},
     "prepare-publish": {},

@@ -696,9 +696,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ama-mcp/sdk@workspace:packages/@ama-mcp/sdk":
+"@ama-mcp/sdk@workspace:mcps/ama-mcp-sdk":
   version: 0.0.0-use.local
-  resolution: "@ama-mcp/sdk@workspace:packages/@ama-mcp/sdk"
+  resolution: "@ama-mcp/sdk@workspace:mcps/ama-mcp-sdk"
   dependencies:
     "@ama-mcp/core": "workspace:~"
     "@eslint-community/eslint-plugin-eslint-comments": "npm:^4.4.0"
@@ -11138,9 +11138,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@o3r/mcp@workspace:tools/@o3r/mcp":
+"@o3r/mcp@workspace:mcps/o3r-mcp":
   version: 0.0.0-use.local
-  resolution: "@o3r/mcp@workspace:tools/@o3r/mcp"
+  resolution: "@o3r/mcp@workspace:mcps/o3r-mcp"
   dependencies:
     "@ama-mcp/angular": "workspace:^"
     "@ama-mcp/core": "workspace:^"
