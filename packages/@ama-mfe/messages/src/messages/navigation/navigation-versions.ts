@@ -17,10 +17,21 @@ export interface NavigationV1_0 extends VersionedMessage {
   version: '1.0';
   /** The url updated */
   url: string;
-  /**
-   * Subset of Angular NavigationExtras forwarded across the iframe boundary so the receiving
-   * router reproduces the original history/location semantics (e.g. skipping a route from history).
-   */
+}
+
+/**
+ * The navigation message object sent via the communication protocol.
+ * Carries a subset of NavigationExtras alongside the updated url so the receiving router
+ * can reproduce the original history/location semantics (e.g. skipping a route from history).
+ */
+export interface NavigationV1_1 extends VersionedMessage {
+  /** @inheritdoc */
+  type: typeof NAVIGATION_MESSAGE_TYPE;
+  /** @inheritdoc */
+  version: '1.1';
+  /** The url updated */
+  url: string;
+  /** Subset of NavigationExtras forwarded across the iframe boundary. */
   extras?: {
     /** Navigate while replacing the current history entry instead of pushing a new one. */
     replaceUrl?: boolean;

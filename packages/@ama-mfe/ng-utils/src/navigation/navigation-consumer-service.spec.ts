@@ -1,5 +1,6 @@
 import {
   NavigationMessage,
+  NavigationV1_1,
 } from '@ama-mfe/messages';
 import {
   RoutedMessage,
@@ -74,7 +75,7 @@ describe('Navigation Handler Service', () => {
       }
     };
     navHandlerService.supportedVersions['1.0'](navMessage);
-    expect((navHandlerService as any).navigate).toHaveBeenCalledWith(navMessage.payload.url, undefined);
+    expect((navHandlerService as any).navigate).toHaveBeenCalledWith(navMessage.payload.url);
   });
 
   // eslint-disable-next-line jest/no-done-callback -- use the callback function to finish the test
@@ -116,23 +117,42 @@ describe('Navigation Handler Service', () => {
       }));
   });
 
-  it('should forward the replaceUrl extra to the router navigate call', () => {
+  it('should forward the replaceUrl extra to the router navigate call when a v1.1 message is received', () => {
     jest.spyOn(router, 'navigate');
-    const navMessage: RoutedMessage<NavigationMessage> = {
+    const navMessage: RoutedMessage<NavigationV1_1> = {
       from: 'test',
       to: [],
       payload: {
         type: 'navigation',
         url: '/go-to/sub-path',
-        version: '1.0',
+        version: '1.1',
         extras: { replaceUrl: true }
       }
     };
-    navHandlerService.supportedVersions['1.0'](navMessage);
+    navHandlerService.supportedVersions['1.1'](navMessage);
     expect(router.navigate).toHaveBeenCalledWith(
       ['go-to', 'sub-path'],
       expect.objectContaining({
         replaceUrl: true
+      }));
+  });
+
+  it('should handle a v1.1 message without extras', () => {
+    jest.spyOn(router, 'navigate');
+    const navMessage: RoutedMessage<NavigationV1_1> = {
+      from: 'test',
+      to: [],
+      payload: {
+        type: 'navigation',
+        url: '/go-to/sub-path',
+        version: '1.1'
+      }
+    };
+    navHandlerService.supportedVersions['1.1'](navMessage);
+    expect(router.navigate).toHaveBeenCalledWith(
+      ['go-to', 'sub-path'],
+      expect.objectContaining({
+        replaceUrl: undefined
       }));
   });
 });

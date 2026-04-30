@@ -4,6 +4,7 @@ import {
 import type {
   NavigationMessage,
   NavigationV1_0,
+  NavigationV1_1,
 } from '@ama-mfe/messages';
 import type {
   RoutedMessage,
@@ -63,6 +64,16 @@ export class NavigationConsumerService implements MessageConsumer<NavigationMess
     '1.0': (message: RoutedMessage<NavigationV1_0>) => {
       const channelId = message.from || undefined;
       this.requestedUrl.next({ url: message.payload.url, channelId });
+      this.navigate(message.payload.url);
+    },
+    /**
+     * Same as 1.0 but applies the navigation extras (e.g. replaceUrl) forwarded by the producer
+     * so the host router reproduces the original history semantics.
+     * @param message message to consume
+     */
+    '1.1': (message: RoutedMessage<NavigationV1_1>) => {
+      const channelId = message.from || undefined;
+      this.requestedUrl.next({ url: message.payload.url, channelId });
       this.navigate(message.payload.url, message.payload.extras);
     }
   };
@@ -91,7 +102,7 @@ export class NavigationConsumerService implements MessageConsumer<NavigationMess
    * @param url - The URL to navigate to.
    * @param extras - Optional navigation extras forwarded from the embedded application.
    */
-  private navigate(url: string, extras?: NavigationV1_0['extras']) {
+  private navigate(url: string, extras?: NavigationV1_1['extras']) {
     const { paths, queryParams } = this.parseUrl(url);
     // No need to keep these in the URL
     hostQueryParams.forEach((key) => delete queryParams[key]);

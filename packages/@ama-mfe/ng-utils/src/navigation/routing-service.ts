@@ -1,6 +1,7 @@
 import type {
   NavigationMessage,
   NavigationV1_0,
+  NavigationV1_1,
 } from '@ama-mfe/messages';
 import {
   NAVIGATION_MESSAGE_TYPE,
@@ -84,7 +85,11 @@ export class RoutingService implements MessageProducer<NavigationMessage>, Messa
    * @param message message to consume
    */
   public readonly supportedVersions = {
-    '1.0': async (message: RoutedMessage<NavigationV1_0>) => {
+    '1.0': async (message: RoutedMessage<any>) => {
+      // Navigation has been triggered from the communication protocol request.
+      await this.router.navigateByUrl(message.payload.url, { state: { triggeredByMessage: true } });
+    },
+    '1.1': async (message: RoutedMessage<any>) => {
       // Navigation has been triggered from the communication protocol request.
       await this.router.navigateByUrl(message.payload.url, {
         state: { triggeredByMessage: true },
@@ -142,24 +147,42 @@ export class RoutingService implements MessageProducer<NavigationMessage>, Messa
         });
       })
     ).subscribe(({ url, channelId, replaceUrl }) => {
-      const messageV10 = {
-        type: 'navigation',
-        version: '1.0',
-        url,
-        ...(replaceUrl ? { extras: { replaceUrl: true } } : {})
-      } satisfies NavigationV1_0;
+      // Pick the best-supported navigation version per peer based on what each peer declared.
+      // Extras (e.g. replaceUrl) are enrichments on v1.1+ and are dropped for peers that only speak v1.0.
       // TODO: sendBest() is not implemented -- https://github.com/AmadeusITGroup/microfrontends/issues/11
-      if (isEmbedded(this.window)) {
-        this.messageService.send(messageV10);
-      } else {
-        if (channelId === undefined) {
-          this.logger.warn('No channelId provided for navigation message');
-        } else {
-          try {
-            this.messageService.send(messageV10, { to: [channelId] });
-          } catch (error) {
-            this.logger.error('Error sending navigation message', error);
-          }
+      if (!isEmbedded(this.window) && channelId === undefined) {
+        this.logger.warn('No channelId provided for navigation message');
+        return;
+      }
+
+      const targetPeerIds = isEmbedded(this.window)
+        ? [...this.messageService.knownPeers.keys()].filter((peerId) => peerId !== this.messageService.id)
+        : [channelId!];
+
+      for (const peerId of targetPeerIds) {
+        const declaredMessages = this.messageService.knownPeers.get(peerId) || [];
+        const supportsV11 = declaredMessages.some((m) => m.type === NAVIGATION_MESSAGE_TYPE && m.version === '1.1');
+        const supportsV10 = declaredMessages.some((m) => m.type === NAVIGATION_MESSAGE_TYPE && m.version === '1.0');
+
+        let message: NavigationV1_0 | NavigationV1_1 | undefined;
+        if (supportsV11) {
+          message = {
+            type: 'navigation',
+            version: '1.1',
+            url,
+            ...(replaceUrl ? { extras: { replaceUrl: true } } : {})
+          } satisfies NavigationV1_1;
+        } else if (supportsV10) {
+          message = { type: 'navigation', version: '1.0', url } satisfies NavigationV1_0;
+        }
+
+        if (!message) {
+          continue;
+        }
+        try {
+          this.messageService.send(message, { to: [peerId] });
+        } catch (error) {
+          this.logger.error('Error sending navigation message', error);
         }
       }
     });

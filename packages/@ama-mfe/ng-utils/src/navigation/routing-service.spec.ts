@@ -62,7 +62,15 @@ describe('Navigation Producer Service', () => {
       unregister: jest.fn()
     };
     const messageServiceMock = {
-      send: jest.fn()
+      send: jest.fn(),
+      id: 'self-id',
+      // By default, a single host peer is known and supports both navigation versions.
+      knownPeers: new Map<string, { type: string; version?: string }[]>([
+        ['host-peer-id', [
+          { type: 'navigation', version: '1.0' },
+          { type: 'navigation', version: '1.1' }
+        ]]
+      ])
     };
 
     loggerServiceMock = {
@@ -96,7 +104,7 @@ describe('Navigation Producer Service', () => {
     expect(producerManagerService.register).toHaveBeenCalledWith(routingService);
   });
 
-  it('should send navigation message via messageService if embedded', () => {
+  it('should send a v1.1 navigation message (without extras) to a v1.1-capable peer when embedded', () => {
     Object.defineProperty(mockedWindow, 'top', { value: globalThis.window.top });
     Object.defineProperty(mockedWindow, 'self', { value: mockedWindow });
     runInInjectionContext(TestBed.inject(Injector), () => {
@@ -107,12 +115,32 @@ describe('Navigation Producer Service', () => {
 
     expect(messageService.send).toHaveBeenCalledWith({
       type: 'navigation',
-      version: '1.0',
+      version: '1.1',
       url: 'end-url'
-    });
+    }, { to: ['host-peer-id'] });
   });
 
-  it('should forward replaceUrl extra in the navigation message when embedded', () => {
+  it('should send a v1.0 navigation message to a v1.0-only peer when embedded', () => {
+    Object.defineProperty(mockedWindow, 'top', { value: globalThis.window.top });
+    Object.defineProperty(mockedWindow, 'self', { value: mockedWindow });
+    (messageService as any).knownPeers = new Map([
+      ['host-peer-id', [{ type: 'navigation', version: '1.0' }]]
+    ]);
+
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      routingService.handleEmbeddedRouting();
+    });
+
+    routerEventsSubject.next(new NavigationEnd(1, 'start-url', 'end-url'));
+
+    expect(messageService.send).toHaveBeenCalledWith({
+      type: 'navigation',
+      version: '1.0',
+      url: 'end-url'
+    }, { to: ['host-peer-id'] });
+  });
+
+  it('should send a v1.1 navigation message with replaceUrl extra to a v1.1-capable peer when embedded', () => {
     Object.defineProperty(mockedWindow, 'top', { value: globalThis.window.top });
     Object.defineProperty(mockedWindow, 'self', { value: mockedWindow });
     jest.spyOn(router, 'getCurrentNavigation').mockReturnValue({ extras: { replaceUrl: true } } as any);
@@ -125,32 +153,19 @@ describe('Navigation Producer Service', () => {
 
     expect(messageService.send).toHaveBeenCalledWith({
       type: 'navigation',
-      version: '1.0',
+      version: '1.1',
       url: 'end-url',
       extras: { replaceUrl: true }
-    });
+    }, { to: ['host-peer-id'] });
   });
 
-  it('should forward replaceUrl extra in the navigation message when not embedded', () => {
-    jest.spyOn(router, 'getCurrentNavigation').mockReturnValue({ extras: { replaceUrl: true, state: { channelId: 'test-channel-id' } } } as any);
-
-    runInInjectionContext(TestBed.inject(Injector), () => {
-      routingService.handleEmbeddedRouting();
-    });
-
-    routerEventsSubject.next(new NavigationEnd(1, 'start-url', 'end-url'));
-
-    expect(messageService.send).toHaveBeenCalledWith({
-      type: 'navigation',
-      version: '1.0',
-      url: 'end-url',
-      extras: { replaceUrl: true }
-    }, { to: ['test-channel-id'] });
-  });
-
-  it('should not include extras in the navigation message when replaceUrl is not set', () => {
+  it('should drop the replaceUrl extra when falling back to v1.0 for a v1.0-only peer', () => {
     Object.defineProperty(mockedWindow, 'top', { value: globalThis.window.top });
     Object.defineProperty(mockedWindow, 'self', { value: mockedWindow });
+    (messageService as any).knownPeers = new Map([
+      ['host-peer-id', [{ type: 'navigation', version: '1.0' }]]
+    ]);
+    jest.spyOn(router, 'getCurrentNavigation').mockReturnValue({ extras: { replaceUrl: true } } as any);
 
     runInInjectionContext(TestBed.inject(Injector), () => {
       routingService.handleEmbeddedRouting();
@@ -162,17 +177,56 @@ describe('Navigation Producer Service', () => {
       type: 'navigation',
       version: '1.0',
       url: 'end-url'
-    });
+    }, { to: ['host-peer-id'] });
   });
 
-  it('should forward received Navigation message with replaceUrl extra to the router', () => {
+  it('should skip peers that do not declare navigation support at all', () => {
+    Object.defineProperty(mockedWindow, 'top', { value: globalThis.window.top });
+    Object.defineProperty(mockedWindow, 'self', { value: mockedWindow });
+    (messageService as any).knownPeers = new Map([
+      ['unrelated-peer', [{ type: 'theme', version: '1.0' }]]
+    ]);
+
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      routingService.handleEmbeddedRouting();
+    });
+
+    routerEventsSubject.next(new NavigationEnd(1, 'start-url', 'end-url'));
+
+    expect(messageService.send).not.toHaveBeenCalled();
+  });
+
+  it('should send a v1.1 navigation message with replaceUrl extra when not embedded', () => {
+    (messageService as any).knownPeers = new Map([
+      ['test-channel-id', [
+        { type: 'navigation', version: '1.0' },
+        { type: 'navigation', version: '1.1' }
+      ]]
+    ]);
+    jest.spyOn(router, 'getCurrentNavigation').mockReturnValue({ extras: { replaceUrl: true, state: { channelId: 'test-channel-id' } } } as any);
+
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      routingService.handleEmbeddedRouting();
+    });
+
+    routerEventsSubject.next(new NavigationEnd(1, 'start-url', 'end-url'));
+
+    expect(messageService.send).toHaveBeenCalledWith({
+      type: 'navigation',
+      version: '1.1',
+      url: 'end-url',
+      extras: { replaceUrl: true }
+    }, { to: ['test-channel-id'] });
+  });
+
+  it('should forward received v1.1 Navigation message with replaceUrl extra to the router', () => {
     TestBed.runInInjectionContext(() => {
-      void routingService.supportedVersions['1.0']({
+      void routingService.supportedVersions['1.1']({
         from: 'sender',
         to: ['receiver'],
         payload: {
           type: 'navigation',
-          version: '1.0',
+          version: '1.1',
           url: '/test',
           extras: { replaceUrl: true }
         }
@@ -198,7 +252,7 @@ describe('Navigation Producer Service', () => {
 
   it('should forward received Navigation message to the router', () => {
     TestBed.runInInjectionContext(() => {
-      expect(Object.keys(routingService.supportedVersions)).toEqual(['1.0']);
+      expect(Object.keys(routingService.supportedVersions)).toEqual(['1.0', '1.1']);
 
       void routingService.supportedVersions['1.0']({
         from: 'sender',
@@ -215,6 +269,9 @@ describe('Navigation Producer Service', () => {
   });
 
   it('should send navigation message via endpointManagerService if channelId is present and not embedded', () => {
+    (messageService as any).knownPeers = new Map([
+      ['test-channel-id', [{ type: 'navigation', version: '1.0' }]]
+    ]);
     jest.spyOn(router, 'getCurrentNavigation').mockReturnValue({ extras: { state: { channelId: 'test-channel-id' } } } as any);
 
     runInInjectionContext(TestBed.inject(Injector), () => {
@@ -230,7 +287,32 @@ describe('Navigation Producer Service', () => {
     }, { to: ['test-channel-id'] });
   });
 
+  it('should send a v1.1 navigation message (without extras) to a v1.1-capable peer when not embedded', () => {
+    (messageService as any).knownPeers = new Map([
+      ['test-channel-id', [
+        { type: 'navigation', version: '1.0' },
+        { type: 'navigation', version: '1.1' }
+      ]]
+    ]);
+    jest.spyOn(router, 'getCurrentNavigation').mockReturnValue({ extras: { state: { channelId: 'test-channel-id' } } } as any);
+
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      routingService.handleEmbeddedRouting();
+    });
+
+    routerEventsSubject.next(new NavigationEnd(1, 'start-url', 'end-url'));
+
+    expect(messageService.send).toHaveBeenCalledWith({
+      type: 'navigation',
+      version: '1.1',
+      url: 'end-url'
+    }, { to: ['test-channel-id'] });
+  });
+
   it('should log an error if endpointManagerService.send throws an error', () => {
+    (messageService as any).knownPeers = new Map([
+      ['test-channel-id', [{ type: 'navigation', version: '1.0' }]]
+    ]);
     jest.spyOn(router, 'getCurrentNavigation').mockReturnValue({ extras: { state: { channelId: 'test-channel-id' } } } as any);
     jest.spyOn(messageService, 'send').mockImplementation(() => {
       throw new Error('send error');
