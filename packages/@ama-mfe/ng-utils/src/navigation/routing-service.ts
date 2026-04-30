@@ -84,9 +84,12 @@ export class RoutingService implements MessageProducer<NavigationMessage>, Messa
    * @param message message to consume
    */
   public readonly supportedVersions = {
-    '1.0': async (message: RoutedMessage<any>) => {
+    '1.0': async (message: RoutedMessage<NavigationV1_0>) => {
       // Navigation has been triggered from the communication protocol request.
-      await this.router.navigateByUrl(message.payload.url, { state: { triggeredByMessage: true } });
+      await this.router.navigateByUrl(message.payload.url, {
+        state: { triggeredByMessage: true },
+        replaceUrl: message.payload.extras?.replaceUrl
+      });
     }
   };
 
@@ -129,15 +132,21 @@ export class RoutingService implements MessageProducer<NavigationMessage>, Messa
         return !extras.skipLocationChange && !extras.state?.triggeredByMessage;
       }),
       map(({ urlAfterRedirects }) => {
-        const { channelId } = this.router.getCurrentNavigation()?.extras?.state || {};
+        const extras = this.router.getCurrentNavigation()?.extras || {};
+        const { channelId } = extras.state || {};
         const currentRouteRegExp = subRouteOnly && this.activatedRoute.routeConfig?.path && new RegExp('^' + this.activatedRoute.routeConfig.path.replace(/(?=\W)/g, '\\'), 'i');
-        return ({ url: currentRouteRegExp ? urlAfterRedirects.replace(currentRouteRegExp, '') : urlAfterRedirects, channelId });
+        return ({
+          url: currentRouteRegExp ? urlAfterRedirects.replace(currentRouteRegExp, '') : urlAfterRedirects,
+          channelId,
+          replaceUrl: extras.replaceUrl
+        });
       })
-    ).subscribe(({ url, channelId }) => {
+    ).subscribe(({ url, channelId, replaceUrl }) => {
       const messageV10 = {
         type: 'navigation',
         version: '1.0',
-        url
+        url,
+        ...(replaceUrl ? { extras: { replaceUrl: true } } : {})
       } satisfies NavigationV1_0;
       // TODO: sendBest() is not implemented -- https://github.com/AmadeusITGroup/microfrontends/issues/11
       if (isEmbedded(this.window)) {

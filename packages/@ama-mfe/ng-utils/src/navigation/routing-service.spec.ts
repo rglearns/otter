@@ -112,6 +112,76 @@ describe('Navigation Producer Service', () => {
     });
   });
 
+  it('should forward replaceUrl extra in the navigation message when embedded', () => {
+    Object.defineProperty(mockedWindow, 'top', { value: globalThis.window.top });
+    Object.defineProperty(mockedWindow, 'self', { value: mockedWindow });
+    jest.spyOn(router, 'getCurrentNavigation').mockReturnValue({ extras: { replaceUrl: true } } as any);
+
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      routingService.handleEmbeddedRouting();
+    });
+
+    routerEventsSubject.next(new NavigationEnd(1, 'start-url', 'end-url'));
+
+    expect(messageService.send).toHaveBeenCalledWith({
+      type: 'navigation',
+      version: '1.0',
+      url: 'end-url',
+      extras: { replaceUrl: true }
+    });
+  });
+
+  it('should forward replaceUrl extra in the navigation message when not embedded', () => {
+    jest.spyOn(router, 'getCurrentNavigation').mockReturnValue({ extras: { replaceUrl: true, state: { channelId: 'test-channel-id' } } } as any);
+
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      routingService.handleEmbeddedRouting();
+    });
+
+    routerEventsSubject.next(new NavigationEnd(1, 'start-url', 'end-url'));
+
+    expect(messageService.send).toHaveBeenCalledWith({
+      type: 'navigation',
+      version: '1.0',
+      url: 'end-url',
+      extras: { replaceUrl: true }
+    }, { to: ['test-channel-id'] });
+  });
+
+  it('should not include extras in the navigation message when replaceUrl is not set', () => {
+    Object.defineProperty(mockedWindow, 'top', { value: globalThis.window.top });
+    Object.defineProperty(mockedWindow, 'self', { value: mockedWindow });
+
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      routingService.handleEmbeddedRouting();
+    });
+
+    routerEventsSubject.next(new NavigationEnd(1, 'start-url', 'end-url'));
+
+    expect(messageService.send).toHaveBeenCalledWith({
+      type: 'navigation',
+      version: '1.0',
+      url: 'end-url'
+    });
+  });
+
+  it('should forward received Navigation message with replaceUrl extra to the router', () => {
+    TestBed.runInInjectionContext(() => {
+      void routingService.supportedVersions['1.0']({
+        from: 'sender',
+        to: ['receiver'],
+        payload: {
+          type: 'navigation',
+          version: '1.0',
+          url: '/test',
+          extras: { replaceUrl: true }
+        }
+      });
+
+      expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/test', { state: { triggeredByMessage: true }, replaceUrl: true });
+    });
+  });
+
   it('should not send navigation message via messageService if embedded, if the skipLocationChange is true', () => {
     Object.defineProperty(mockedWindow, 'top', { value: globalThis.window.top });
     Object.defineProperty(mockedWindow, 'self', { value: mockedWindow });

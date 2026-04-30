@@ -74,7 +74,7 @@ describe('Navigation Handler Service', () => {
       }
     };
     navHandlerService.supportedVersions['1.0'](navMessage);
-    expect((navHandlerService as any).navigate).toHaveBeenCalledWith(navMessage.payload.url);
+    expect((navHandlerService as any).navigate).toHaveBeenCalledWith(navMessage.payload.url, undefined);
   });
 
   // eslint-disable-next-line jest/no-done-callback -- use the callback function to finish the test
@@ -113,6 +113,26 @@ describe('Navigation Handler Service', () => {
       ['go-to', 'sub-path'],
       expect.objectContaining({
         relativeTo: { routeConfid: { path: 'child2' } }
+      }));
+  });
+
+  it('should forward the replaceUrl extra to the router navigate call', () => {
+    jest.spyOn(router, 'navigate');
+    const navMessage: RoutedMessage<NavigationMessage> = {
+      from: 'test',
+      to: [],
+      payload: {
+        type: 'navigation',
+        url: '/go-to/sub-path',
+        version: '1.0',
+        extras: { replaceUrl: true }
+      }
+    };
+    navHandlerService.supportedVersions['1.0'](navMessage);
+    expect(router.navigate).toHaveBeenCalledWith(
+      ['go-to', 'sub-path'],
+      expect.objectContaining({
+        replaceUrl: true
       }));
   });
 });
