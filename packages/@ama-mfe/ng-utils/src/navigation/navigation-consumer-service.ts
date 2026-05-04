@@ -71,6 +71,7 @@ export class NavigationConsumerService implements MessageConsumer<NavigationMess
      * so the host router reproduces the original history semantics.
      * @param message message to consume
      */
+    // eslint-disable-next-line @stylistic/quote-props -- keep quotes for consistency with '1.0'
     '1.1': (message: RoutedMessage<NavigationV1_1>) => {
       const channelId = message.from || undefined;
       this.requestedUrl.next({ url: message.payload.url, channelId });

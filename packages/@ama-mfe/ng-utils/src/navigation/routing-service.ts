@@ -89,6 +89,7 @@ export class RoutingService implements MessageProducer<NavigationMessage>, Messa
       // Navigation has been triggered from the communication protocol request.
       await this.router.navigateByUrl(message.payload.url, { state: { triggeredByMessage: true } });
     },
+    // eslint-disable-next-line @stylistic/quote-props -- keep quotes for consistency with '1.0'
     '1.1': async (message: RoutedMessage<any>) => {
       // Navigation has been triggered from the communication protocol request.
       await this.router.navigateByUrl(message.payload.url, {
@@ -147,40 +148,25 @@ export class RoutingService implements MessageProducer<NavigationMessage>, Messa
         });
       })
     ).subscribe(({ url, channelId, replaceUrl }) => {
-      // Pick the best-supported navigation version per peer based on what each peer declared.
-      // Extras (e.g. replaceUrl) are enrichments on v1.1+ and are dropped for peers that only speak v1.0.
+      // Always emit the latest version we produce. The ConsumerManagerService dispatches to the
+      // highest compatible minor a consumer has declared, so v1.0-only peers still navigate
+      // correctly — they just ignore the optional extras.
+      const message: NavigationV1_1 = {
+        type: 'navigation',
+        version: '1.1',
+        url,
+        ...(replaceUrl ? { extras: { replaceUrl: true } } : {})
+      };
       // TODO: sendBest() is not implemented -- https://github.com/AmadeusITGroup/microfrontends/issues/11
-      if (!isEmbedded(this.window) && channelId === undefined) {
+      // When multiple majors are supported, sendBest should receive the latest minor of each
+      // supported major and dispatch to peers according to their declared compatibility.
+      if (isEmbedded(this.window)) {
+        this.messageService.send(message);
+      } else if (channelId === undefined) {
         this.logger.warn('No channelId provided for navigation message');
-        return;
-      }
-
-      const targetPeerIds = isEmbedded(this.window)
-        ? [...this.messageService.knownPeers.keys()].filter((peerId) => peerId !== this.messageService.id)
-        : [channelId!];
-
-      for (const peerId of targetPeerIds) {
-        const declaredMessages = this.messageService.knownPeers.get(peerId) || [];
-        const supportsV11 = declaredMessages.some((m) => m.type === NAVIGATION_MESSAGE_TYPE && m.version === '1.1');
-        const supportsV10 = declaredMessages.some((m) => m.type === NAVIGATION_MESSAGE_TYPE && m.version === '1.0');
-
-        let message: NavigationV1_0 | NavigationV1_1 | undefined;
-        if (supportsV11) {
-          message = {
-            type: 'navigation',
-            version: '1.1',
-            url,
-            ...(replaceUrl ? { extras: { replaceUrl: true } } : {})
-          } satisfies NavigationV1_1;
-        } else if (supportsV10) {
-          message = { type: 'navigation', version: '1.0', url } satisfies NavigationV1_0;
-        }
-
-        if (!message) {
-          continue;
-        }
+      } else {
         try {
-          this.messageService.send(message, { to: [peerId] });
+          this.messageService.send(message, { to: [channelId] });
         } catch (error) {
           this.logger.error('Error sending navigation message', error);
         }

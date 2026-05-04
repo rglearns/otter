@@ -24,13 +24,9 @@ export interface NavigationV1_0 extends VersionedMessage {
  * Carries a subset of NavigationExtras alongside the updated url so the receiving router
  * can reproduce the original history/location semantics (e.g. skipping a route from history).
  */
-export interface NavigationV1_1 extends VersionedMessage {
-  /** @inheritdoc */
-  type: typeof NAVIGATION_MESSAGE_TYPE;
+export interface NavigationV1_1 extends Omit<NavigationV1_0, 'version'> {
   /** @inheritdoc */
   version: '1.1';
-  /** The url updated */
-  url: string;
   /** Subset of NavigationExtras forwarded across the iframe boundary. */
   extras?: {
     /** Navigate while replacing the current history entry instead of pushing a new one. */
