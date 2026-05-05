@@ -31,7 +31,7 @@ import {
 import {
   McpServer,
   ResourceTemplate,
-} from '@modelcontextprotocol/sdk/server/mcp.js';
+} from '@modelcontextprotocol/sdk/server/mcp';
 import type {
   CallToolResult,
 } from '@modelcontextprotocol/sdk/types.d.ts';

@@ -6,7 +6,7 @@ import {
 } from 'node:path';
 import type {
   McpServer,
-} from '@modelcontextprotocol/sdk/server/mcp.js';
+} from '@modelcontextprotocol/sdk/server/mcp';
 import {
   z,
 } from 'zod';

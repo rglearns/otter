@@ -1,6 +1,6 @@
 import type {
   ServerOptions,
-} from '@modelcontextprotocol/sdk/server/index.js';
+} from '@modelcontextprotocol/sdk/server/index';
 import {
   McpServer,
   type ReadResourceCallback,
@@ -10,7 +10,7 @@ import {
   type ResourceMetadata,
   type ResourceTemplate,
   type ToolCallback,
-} from '@modelcontextprotocol/sdk/server/mcp.js';
+} from '@modelcontextprotocol/sdk/server/mcp';
 import type {
   AnySchema,
   ZodRawShapeCompat,

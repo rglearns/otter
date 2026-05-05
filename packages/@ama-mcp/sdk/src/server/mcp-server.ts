@@ -15,7 +15,7 @@ import {
 } from '@ama-mcp/core';
 import type {
   McpServer,
-} from '@modelcontextprotocol/sdk/server/mcp.js';
+} from '@modelcontextprotocol/sdk/server/mcp';
 import {
   sendGenAIEventMetricsIfAuthorized,
 } from '@o3r/telemetry';

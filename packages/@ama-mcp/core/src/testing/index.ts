@@ -1,12 +1,12 @@
 import {
   Client,
-} from '@modelcontextprotocol/sdk/client/index.js';
+} from '@modelcontextprotocol/sdk/client/index';
 import {
   InMemoryTransport,
-} from '@modelcontextprotocol/sdk/inMemory.js';
+} from '@modelcontextprotocol/sdk/inMemory';
 import type {
   McpServer,
-} from '@modelcontextprotocol/sdk/server/mcp.js';
+} from '@modelcontextprotocol/sdk/server/mcp';
 
 /**
  * Set up an MCP client and server for testing purposes.

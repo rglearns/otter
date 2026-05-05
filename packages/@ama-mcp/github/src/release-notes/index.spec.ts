@@ -25,7 +25,7 @@ import {
 } from '@ama-mcp/core';
 import {
   McpServer,
-} from '@modelcontextprotocol/sdk/server/mcp.js';
+} from '@modelcontextprotocol/sdk/server/mcp';
 import {
   registerReleaseNotes,
 } from './index';

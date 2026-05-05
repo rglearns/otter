@@ -7,7 +7,7 @@ import {
 import {
   type McpServer,
   ResourceTemplate,
-} from '@modelcontextprotocol/sdk/server/mcp.js';
+} from '@modelcontextprotocol/sdk/server/mcp';
 import {
   Octokit,
   type RestEndpointMethodTypes,
